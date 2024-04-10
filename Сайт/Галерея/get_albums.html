@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Галерея</title>
+    <style>
+        .album {
+            display: inline-block;
+            margin: 20px;
+        }
+        .album img {
+            max-width: 200px;
+            max-height: 200px;
+        }
+        .album-info {
+            margin-top: 10px;
+        }
+        .album-info h2 {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+        .album-info p {
+            font-size: 14px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Галерея</h1>
+
+    <div id="gallery">
+        <!-- Сюда будет загружаться содержимое галереи -->
+    </div>
+
+    <script>
+        // Функция для загрузки галереи через AJAX
+        function loadAlbums() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        // Преобразуем JSON-данные в массив объектов
+                        var albumsData = JSON.parse(xhr.responseText);
+    
+                        // Генерируем HTML для отображения альбомов
+                        var galleryHTML = '';
+                        albumsData.forEach(function(album) {
+                            galleryHTML += '<div class="album">';
+                            galleryHTML += '<h2>' + album.album_name + '</h2>';
+                            galleryHTML += '<p>' + album.description + '</p>';
+                            galleryHTML += '</div>';
+                        });
+    
+                        // Обновляем содержимое галереи
+                        document.getElementById("gallery").innerHTML = galleryHTML;
+                    } else {
+                        console.error("Ошибка загрузки альбомов: " + xhr.statusText);
+                    }
+                }
+            };
+            xhr.open("GET", "get_album.php", true);
+            xhr.send();
+        }
+    
+        // Загрузка альбомов при загрузке страницы
+        window.onload = loadAlbums;
+    </script>
+</body>
+</html>

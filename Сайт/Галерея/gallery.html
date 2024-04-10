@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Галерея фотографий пользователя</title>
+    <style>
+            body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #979BE3;
+            background: -webkit-linear-gradient(to left, #8f94fb, #979BE3);
+            background: linear-gradient(to left, #8f94fb, #979BE3);
+            overflow: hidden;
+            position: relative;
+        }
+        /* Простые стили для галереи */
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* Выравнивание по центру горизонтально */
+            gap: 20px;
+            text-align: center; /* Выравнивание по центру горизонтально для элементов */
+        }
+
+        .gallery .photo-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .gallery img {
+            max-width: 200px; /* Максимальная ширина изображения */
+            max-height: 200px; /* Максимальная высота изображения */
+            object-fit: cover; /* Заполнение контейнера без искажений */
+            border-radius: 10px; /* Закругление углов */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Тень */
+            cursor: pointer; /* Изменяем курсор при наведении на изображение */
+            transition: transform 0.3s ease;
+        }
+        .gallery img:hover{
+            transform: scale(1.1);
+        }
+        /* Стили для кнопки удаления */
+        .delete-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: #f00; /* Цвет иконки */
+            transition: color 0.3s ease; /* Плавное изменение цвета при наведении */
+        }
+
+        .delete-button:hover {
+            color: #c00; /* Цвет иконки при наведении */
+        }
+
+        /* Стили для модального окна */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Прозрачный цвет фона */
+            overflow: auto;
+        }
+
+        .modal-content {
+            margin: 10% auto;
+            display: block;
+            width: auto;
+            max-width: 100%;
+            max-height: 80vh;
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Выравниваем содержимое по центру */
+        }
+
+        .modal-content img {
+            max-width: 100%; /* Максимальная ширина изображения равна ширине контейнера */
+            max-height: 80vh; /* Максимальная высота изображения равна 80% высоты экрана */
+            object-fit: contain; /* Подгоняем изображение в контейнер без искажений */
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Галерея фотографий пользователя</h1>
+
+    <!-- Контейнер для отображения фотографий -->
+    <div class="gallery" id="gallery">
+        <!-- Фотографии пользователя будут загружены с помощью JavaScript -->
+    </div>
+
+    <!-- Модальное окно для увеличенного изображения -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('myModal').style.display='none'">&times;</span>
+            <img id="modalImg" src="" alt="Увеличенное изображение">
+        </div>
+    </div>
+
+    <a href="../Профиль/profile.html">Вернуться на страницу профиля</a>
+    <a href="../Галерея/create_albums.html">альбом</a><br>
+    <a href="../Галерея/get_album.php">посмотреть алббомы</a>
+<!-- Продолжение HTML кода -->
+
+<script>
+    // Функция для загрузки фотографий пользователя
+    function loadUserPhotos() {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    var photosContainer = document.getElementById("gallery");
+                    response.photos.forEach(function(photo) {
+                        var photoContainer = document.createElement("div");
+                        photoContainer.className = "photo-container";
+
+                        var img = document.createElement("img");
+                        img.src = photo;
+                        img.alt = "Фото пользователя";
+
+                        var deleteButton = document.createElement("button");
+                        deleteButton.className = "delete-button";
+                        deleteButton.innerHTML = "&#128465;"; // Иконка корзины
+                        deleteButton.onclick = function() {
+                            deletePhoto(photo);
+                        };
+
+                        photoContainer.appendChild(img);
+                        photoContainer.appendChild(deleteButton);
+
+                        // Добавляем обработчик события для увеличения изображения при клике
+                        img.addEventListener("click", function() {
+                            var modal = document.getElementById("myModal");
+                            var modalImg = document.getElementById("modalImg");
+                            modal.style.display = "block"; // Показываем модальное окно
+                            modalImg.src = this.src; // Устанавливаем src для увеличенного изображения
+                        });
+
+                        photosContainer.appendChild(photoContainer);
+                    });
+                } else {
+                    console.error("Ошибка загрузки фотографий пользователя.");
+                }
+            }
+        };
+        xhr.open("GET", "get_photos.php", true);
+        xhr.send();
+    }
+
+    // Функция для удаления фотографии
+    function deletePhoto(photoPath) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    // Успешно удалено, обновляем галерею
+                    document.getElementById("gallery").innerHTML = "";
+                    loadUserPhotos();
+                } else {
+                    console.error("Ошибка при удалении фотографии.");
+                }
+            }
+        };
+        xhr.open("POST", "delete_photo.php", true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.send("photo=" + encodeURIComponent(photoPath));
+    }
+
+    // Закрытие модального окна при клике на крестик
+    var closeBtn = document.getElementsByClassName("close")[0];
+    closeBtn.onclick = function() {
+        document.getElementById("myModal").style.display = "none";
+    };
+
+    // Загружаем фотографии пользователя при загрузке страницы
+    window.onload = loadUserPhotos;
+</script>
+</body>
+</html>

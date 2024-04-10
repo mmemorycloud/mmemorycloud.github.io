@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styleprofile.css">
+    <title>Профиль пользователя</title>
+    <style>
+        /* Ваши стили */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Профиль пользователя</h1>
+        <div id="user-info" class="user-info">
+            <div class="avatar-container">
+                <!-- Элемент для отображения аватара пользователя -->
+                <img id="userAvatar" alt="User Avatar" class="avatar" onclick="toggleAvatarOptions()">
+                <div id="avatar-options" class="avatar-options">
+                    <ul>
+                        <form id="changeAvatarForm" enctype="multipart/form-data" action="change_avatar.php" method="post">
+                            <button type="button" class="change-avatar" onclick="openFileInput()" style="color: #4e54c8;">✏️ Сменить аватарку</button>
+                            <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display: none;">
+                        </form>
+                        
+                    </ul>
+                </div>
+            </div>
+            <div class="user-details">
+                <h2>Информация о пользователе:</h2>
+                <p>Имя пользователя: <span id="username"></span></p>
+                <p>Email: <span id="useremail"></span></p>
+            </div>
+            <!-- Обновленный раздел для формы смены аватара -->
+            <div class="avatar-form" style="display: none;">
+                <h2>Сменить аватар</h2>
+            
+            </div>
+        </div>
+        <!-- Кнопки для загрузки фотографий на сервер -->
+        <h2>Загрузить фотографии на сервер:</h2>
+        <form id="uploadPhotosForm" enctype="multipart/form-data" action="upload_photo.php" method="POST">
+            <input type="file" name="photos[]" accept="image/*" multiple>
+            <button type="submit">Загрузить фотографии</button>
+        </form>
+        <h2>Галерея фотографий пользователя</h2>
+        <div id="gallery">
+            <!-- Фотографии пользователя будут загружены с помощью AJAX -->
+        </div>
+        <a href="../Галерея/gallery.html">Смотреть все фотографии</a>
+
+        <a href="logout.php" class="logout-link">Выйти</a>
+    </div>
+
+    <script>
+        
+        console.log("Скрипт успешно загружен");
+        document.getElementById("avatarInput").addEventListener("change", function(event) {
+    document.getElementById("changeAvatarForm").submit(); // Отправка формы после выбора файла
+});
+
+        // Функция для загрузки данных о пользователе и его фотографиях
+        function loadUserData() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        document.getElementById("username").textContent = response.login;
+                        document.getElementById("useremail").textContent = response.email;
+    
+                        // Загрузка фотографий пользователя
+                        loadUserPhotos(response.photos);
+    
+                        // Обновляем аватар пользователя, если он есть
+                        if (response.avatar) {
+                            document.getElementById("userAvatar").src = response.avatar;
+                        }
+                    } else {
+                        console.error("Ошибка загрузки данных о пользователе.");
+                    }
+                }
+            };
+            xhr.open("GET", "profile.php", true);
+            xhr.send();
+        }
+    
+        // Функция для загрузки фотографий пользователя
+        function loadUserPhotos(photos) {
+            var photosContainer = document.getElementById("gallery");
+            photosContainer.innerHTML = ""; // Очищаем контейнер с фотографиями перед загрузкой новых
+            
+            photos.slice(0, 5).forEach(function(photo) {
+                var img = document.createElement("img");
+                img.src = photo;
+                photosContainer.appendChild(img);
+            });
+        }
+
+        // Функция для загрузки альбомов пользователя
+        function loadUserAlbums() {
+            var albumsContainer = document.getElementById("albums");
+            albumsContainer.innerHTML = ""; // Очищаем контейнер с альбомами перед загрузкой новых
+            
+            // Здесь можно отправить запрос на сервер для загрузки альбомов
+            // Пример: fetch('load_albums.php')
+            //     .then(response => response.json())
+            //     .then(data => {
+            //         data.forEach(album => {
+            //             var link = document.createElement("a");
+            //             link.href = album.url;
+            //             link.textContent = album.name;
+            //             albumsContainer.appendChild(link);
+            //         });
+            //     })
+            //     .catch(error => console.error('Ошибка загрузки альбомов:', error));
+
+            // Пока просто добавляем ссылку на страницу с альбомами
+            var link = document.createElement("a");
+            link.href = "../Альбомы/albums.html";
+            link.textContent = "Смотреть все альбомы";
+            albumsContainer.appendChild(link);
+        }
+    
+        // Функция для показа опций аватара
+        function toggleAvatarOptions() {
+            var avatarOptions = document.getElementById("avatar-options");
+            avatarOptions.classList.toggle("show");
+        }
+
+        // Функция для открытия диалогового окна выбора файла
+        function openFileInput() {
+            document.getElementById("avatarInput").click();
+        }
+
+        document.getElementById("changeAvatarForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+    console.log("Форма отправлена"); // Добавляем console.log для отладки
+    var formData = new FormData(this); // Создаем объект FormData для отправки данных формы
+
+    // Выведем содержимое formData в консоль
+    for (var pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
+
+    // Отправляем запрос на сервер
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                alert("Аватар успешно загружен и сохранен.");
+                loadUserData(); // Обновляем данные о пользователе после успешной загрузки аватарки
+            } else {
+                alert("Ошибка при загрузке аватарки.");
+            }
+        }
+    };
+    xhr.open("POST", "change_avatar.php", true);
+    xhr.send(formData); // Отправляем данные формы на сервер
+});
+
+
+    
+        // Загружаем данные о пользователе и его фотографиях при загрузке страницы
+        window.onload = function() {
+            loadUserData();
+            loadUserAlbums();
+        };
+    </script>
+</body>
+</html>

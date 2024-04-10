@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание альбома</title>
+    <!-- Подключение стилей, скриптов или других ресурсов -->
+</head>
+<body>
+    <h1>Создание альбома</h1>
+    
+    <form action="create_album.php" method="post" enctype="multipart/form-data">
+        <label for="album_name">Название альбома:</label><br>
+        <input type="text" id="album_name" name="album_name" required><br><br>
+        
+        <label for="description">Описание:</label><br>
+        <textarea id="description" name="description"></textarea><br><br>
+        
+        <label for="access_level">Уровень доступа:</label><br>
+        <select id="access_level" name="access_level">
+            <option value="public">Публичный</option>
+            <option value="private">Закрытый</option>
+        </select><br><br>
+        
+        <div id="allowed_users_block" style="display: none;">
+            <label for="allowed_users">Доступные пользователи (через запятую):</label><br>
+            <input type="text" id="allowed_users" name="allowed_users"><br><br>
+        </div>        
+        
+        <label for="photos">Выберите фотографии:</label><br>
+        <input type="file" id="photos" name="photos[]" multiple accept="image/*"><br>
+        
+        <input type="submit" value="Создать альбом">
+    </form>
+    
+    <script>
+        document.getElementById('access_level').addEventListener('change', function() {
+            var allowedUsersBlock = document.getElementById('allowed_users_block');
+            if (this.value === 'private') {
+                allowedUsersBlock.style.display = 'block';
+            } else {
+                allowedUsersBlock.style.display = 'none';
+            }
+        });
+        </script>
+        
+</body>
+</html>
